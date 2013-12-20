@@ -1,3 +1,12 @@
+/***************************************************
+ *  File: tash.c -- A mini command line interpreter.
+ *
+ *          Author      Year    Description
+ *
+ *   1.  Ken Thompson   1975    Create on Unix V6
+ *   2.  Leo Ma         2013    Porting on Linux
+ *
+ ***************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -82,7 +91,6 @@ char peekc;
 char overflow;
 char glob;
 char error;
-char acctf;
 char uid;
 char setintr;
 
@@ -168,29 +176,21 @@ void err(char *s)
   }
 }
 
-int any(int c, char *as)
+int any(int c, char *s)
 {
-  char *s;
-
-  s = as;
   while (*s) {
     if (c == *s++)
       return 1;
   }
-
   return 0;
 }
 
-int equal(char *as1, char *as2) {
-  char *s1, *s2;
-
-  s1 = as1;
-  s2 = as2;
+int equal(char *s1, char *s2)
+{
   while (*s1 == *s2++) {
     if (*s1++ == '\0')
       return 1;
   }
-
   return 0;
 }
 
@@ -537,7 +537,6 @@ void execute(unsigned *t, int *pf1, int *pf2)
 
       if (equal(cp1, "login")) {
         if (prompt) {
-          // close(acctf);
           execv("/bin/login", (char **)(t + DCOM));
         }
         prs("login: cannot execte\n");
@@ -546,7 +545,6 @@ void execute(unsigned *t, int *pf1, int *pf2)
   
       if (equal(cp1, "newgrp")) {
         if (prompt) {
-          // close(acctf);
           execv("/bin/newgrp", (char **)(t + DCOM));
         }
         prs("newgrp: cannot execte\n");
@@ -667,7 +665,6 @@ f1:
         exit(0);
       }
 
-      close(acctf);
       glob = 0;
       scan(t, &tglob);
       if (glob) {

@@ -1,3 +1,12 @@
+/***************************************************
+ *  File: glob.c -- Globbing.
+ *
+ *          Author      Year    Description
+ *
+ *   1.  Ken Thompson   1975    Create on Unix V6
+ *   2.  Leo Ma         2013    Porting on Linux
+ *
+ ***************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>

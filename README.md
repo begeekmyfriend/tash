@@ -18,29 +18,20 @@ your user id as root.
   
   You may have a quick start inputing command lines in three ways as follows:
 
-  1. leo@leo-desktop:~/tash$ ./tash -c "ls *.c"
-     glob.c tash.c
+  1. leo@leo-desktop:~/tash$ ./tash -c "ls *.c | grep glob"
+     glob.c
 
   2. leo@leo-desktop:~/tash$ ./tash -t test.sh
-     ls *.c
-     glob.c tash.c
+     ls *.c | grep glob
+     glob.c
 
   3. leo@leo-desktop:~/tash$ cat test.sh
      #!/usr/local/bin/tash
-     ls *.c
+     ls *.c | grep glob
      leo@leo-desktop:~/tash$ chmod +x test.sh
      leo@leo-desktop:~/tash$ ./test.sh
-     glob.c tash.c  
+     glob.c
      
-  However, there are still some problems in symbol parsing such as pipe function.
-For example, when you input command lines like that:
-
-  ./tash -c "ls | grep *.c"
-
-  It will prompt "Grep: (Standard input): Bad file descriptor..." I guess it
-must be problems with standard I/O redirection, but I do not know how. It would
-be grateful if someone would like to point out and fix this bug.
-
   The original source code and mannual of Unix V6SH was put on The Unix Heritage
 Society(TUHS). You may download them at http://minnie.tuhs.org/cgi-bin/utree.pl
 for free.
