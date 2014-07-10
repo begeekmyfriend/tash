@@ -17,20 +17,26 @@ your user id as root.
 
 You may have a quick start inputing command lines in three ways as follows:
 
-  ~/tash$ ./tash -c "ls *.c | grep glob"
-  glob.c
-
-  ~/tash$ ./tash -t test.sh
-  ls *.c | grep glob
-  glob.c
-
-  ~/tash$ cat test.sh
-  #!/usr/local/bin/tash
-  ls *.c | grep glob
-  ~/tash$ chmod +x test.sh
-  ~/tash$ ./test.sh
-  glob.c
-     
+Execute command with option '-c'
+```
+~/tash$ ./tash -c "ls *.c | grep glob"
+glob.c
+```
+Execute shell file with option '-t'
+```
+~/tash$ ./tash -t test.sh
+ls *.c | grep glob
+glob.c
+```
+Execute shell file
+```
+~/tash$ cat test.sh
+#!/usr/local/bin/tash
+ls *.c | grep glob
+~/tash$ chmod +x test.sh
+~/tash$ ./test.sh
+glob.c
+```     
 The original source code and mannual of Unix V6SH was put on The Unix Heritage
 Society(TUHS). You may download them at http://minnie.tuhs.org/cgi-bin/utree.pl
 for free.
