@@ -82,9 +82,9 @@ char **tokp;
 char **etokp;
 
 // Syntax tree
-unsigned trebuf[TRESIZ];
-unsigned *treep;
-unsigned *treeend;
+unsigned long trebuf[TRESIZ];
+unsigned long *treep;
+unsigned long *treeend;
 
 char peekc;
 
@@ -194,10 +194,10 @@ int equal(char *s1, char *s2)
   return 0;
 }
 
-void scan(unsigned *at, char (*f)(char))
+void scan(unsigned long *at, char (*f)(char))
 {
   char *p, c;
-  unsigned *t;
+  unsigned long *t;
 
   t = at + DCOM;
   while ((p = (char *)*t++) != '\0')
@@ -217,9 +217,9 @@ char trim(char c)
   return (c & 0x7f);
 }
 
-unsigned *tree(int n)
+unsigned long *tree(int n)
 {
-  unsigned *t;
+  unsigned long *t;
   
   t = treep;
   treep += n;
@@ -232,11 +232,11 @@ unsigned *tree(int n)
   return t;
 }
 
-unsigned *parse1(char **p1, char **p2);
-unsigned *parse2(char **p1, char **p2);
-unsigned *parse3(char **p1, char **p2);
+unsigned long *parse1(char **p1, char **p2);
+unsigned long *parse2(char **p1, char **p2);
+unsigned long *parse3(char **p1, char **p2);
 
-unsigned *parse(char **p1, char **p2)
+unsigned long *parse(char **p1, char **p2)
 {
   while (p1 != p2) {
     if (any(**p1, ";&\n")) {
@@ -251,10 +251,10 @@ unsigned *parse(char **p1, char **p2)
 /* Stage 1 parses command list whose left and right trees store its subcommand,
  * while left tree to be passed down to the next stage and right tree to be recursed.
  */
-unsigned *parse1(char **p1, char **p2)
+unsigned long *parse1(char **p1, char **p2)
 {
   char **p, c;
-  unsigned *t, *t1;
+  unsigned long *t, *t1;
   int l;
 
   l = 0;
@@ -275,14 +275,14 @@ unsigned *parse1(char **p1, char **p2)
           c = **p;
           t = tree(4);
           t[DTYP] = TLST;
-          t[DLEF] = (unsigned)parse2(p1, p);
+          t[DLEF] = (unsigned long)parse2(p1, p);
           t[DFLG] = 0;
           // Push down the attribute immediately.
           if (c == '&') {
-            t1 = (unsigned *)t[DLEF];
+            t1 = (unsigned long *)t[DLEF];
             t1[DFLG] = FAND | FPRS | FINT;
           }
-          t[DRIT] = (unsigned)parse(p + 1, p2);
+          t[DRIT] = (unsigned long)parse(p + 1, p2);
         }
         return t;
     }
@@ -301,10 +301,10 @@ unsigned *parse1(char **p1, char **p2)
 /* Stage 2 parses filter whose left tree to be transferred to stage 3
  * and right tree to be recursed. 
  */
-unsigned *parse2(char **p1, char **p2)
+unsigned long *parse2(char **p1, char **p2)
 {
   char **p;
-  unsigned *t;
+  unsigned long *t;
   int l;
 
   l = 0;
@@ -323,8 +323,8 @@ unsigned *parse2(char **p1, char **p2)
         if (l == 0) {
           t = tree(4);
           t[DTYP] = TFIL;
-          t[DLEF] = (unsigned)parse3(p1, p);
-          t[DRIT] = (unsigned)parse2(p + 1, p2);
+          t[DLEF] = (unsigned long)parse3(p1, p);
+          t[DRIT] = (unsigned long)parse2(p + 1, p2);
           t[DFLG] = 0;  // Note: Attribute to be pushed down in execute() function.
           return t;
         }
@@ -340,13 +340,13 @@ unsigned *parse2(char **p1, char **p2)
 /* Stage 3 parses parathesis command which should be transferred to stage 1
  * and simple command which to be generated directly.
  */
-unsigned *parse3(char **p1, char **p2)
+unsigned long *parse3(char **p1, char **p2)
 {
   char **p, c;
   char **lp, **rp;
-  unsigned *t;
+  unsigned long *t;
   int n, l;
-  unsigned input, output, flag;
+  unsigned long input, output, flag;
 
   flag = 0;
   // Last sub command in parathesis commands.
@@ -402,12 +402,12 @@ unsigned *parse3(char **p1, char **p2)
           if (c == '<') {
             if (input != 0)
               error++;
-            input = (unsigned)*p;
+            input = (unsigned long)*p;
           } else {
             if (output != 0) {
               error++;
             }
-            output = (unsigned)*p;
+            output = (unsigned long)*p;
           }
         }
         continue;
@@ -426,7 +426,7 @@ unsigned *parse3(char **p1, char **p2)
       error++;
     t = tree(5);
     t[DTYP] = TPAR;
-    t[DSPR] = (unsigned)parse1(lp, rp);
+    t[DSPR] = (unsigned long)parse1(lp, rp);
     goto OUT;
   }
 
@@ -437,7 +437,7 @@ unsigned *parse3(char **p1, char **p2)
   t = tree(n + DCOM);
   t[DTYP] = TCOM;
   for (l = 0; l < n; l++)
-    t[l + DCOM] = (unsigned)p1[l];
+    t[l + DCOM] = (unsigned long)p1[l];
   t[l + DCOM] = 0;  // pointer to NULL
 OUT:
   t[DFLG] = flag;
@@ -446,7 +446,7 @@ OUT:
   return t;
 }
 
-void texec(char *path, unsigned *t)
+void texec(char *path, unsigned long *t)
 {
   extern int errno;
 
@@ -454,8 +454,8 @@ void texec(char *path, unsigned *t)
 
   if (errno == ENOEXEC) {
     if (*linep != '\0')
-      t[DCOM] = (unsigned)linep;
-    t[DSPR] = (unsigned)"/bin/sh";
+      t[DCOM] = (unsigned long)linep;
+    t[DSPR] = (unsigned long)"/bin/sh";
     execv((char *)t[DSPR], (char **)(t + DSPR));
     prs("No shell!\n");
     exit(-1);
@@ -468,7 +468,7 @@ void texec(char *path, unsigned *t)
   }
 }
 
-void pwait(int p, unsigned *t)
+void pwait(int p, unsigned long *t)
 {
   int pid, error, status;
 
@@ -498,10 +498,10 @@ void pwait(int p, unsigned *t)
   }
 }
 
-void execute(unsigned *t, int *pf1, int *pf2)
+void execute(unsigned long *t, int *pf1, int *pf2)
 {
-  unsigned flag;
-  unsigned *t1;
+  unsigned long flag;
+  unsigned long *t1;
   char *cp1, *cp2;
   int pid, fd, pv[2];
   extern int errno;
@@ -659,7 +659,7 @@ f1:
       // TPAR recursive, exit immediately
       if (t[DTYP] == TPAR) {
         // Push down attribute
-        if ((t1 = (unsigned *)t[DSPR]) != NULL)
+        if ((t1 = (unsigned long *)t[DSPR]) != NULL)
           t1[DFLG] |= flag & FINT;
         execute(t1, NULL, NULL);
         exit(0);
@@ -668,7 +668,7 @@ f1:
       glob = 0;
       scan(t, &tglob);
       if (glob) {
-        t[DSPR] = (unsigned)"glob";//"/etc/glob";
+        t[DSPR] = (unsigned long)"glob";//"/etc/glob";
         execv((char *)t[DSPR], (char **)(t + DSPR));
         prs("glob: cannot execute\n");
         exit(-1);
@@ -695,10 +695,10 @@ f1:
       flag = t[DFLG];
       pipe(pv);
       // Push down filter attribute
-      t1 = (unsigned *)t[DLEF];
+      t1 = (unsigned long *)t[DLEF];
       t1[DFLG] |= FPOU | (flag & (FPIN | FINT | FPRS));
       execute(t1, pf1, pv);
-      t1 = (unsigned *)t[DRIT];
+      t1 = (unsigned long *)t[DRIT];
       t1[DFLG] |= FPIN | (flag & (FPOU | FINT | FAND | FPRS));
       execute(t1, pv, pf2);
       return;
@@ -706,10 +706,10 @@ f1:
     case TLST:
       // Push down list attribute.
       flag = t[DFLG] | FINT;
-      if ((t1 = (unsigned *)t[DLEF]) != NULL)
+      if ((t1 = (unsigned long *)t[DLEF]) != NULL)
         t1[DFLG] |= flag;
       execute(t1, NULL, NULL);
-      if ((t1 = (unsigned *)t[DRIT]) != NULL)
+      if ((t1 = (unsigned long *)t[DRIT]) != NULL)
         t1[DFLG] |= flag;
       execute(t1, NULL, NULL);
       return;
@@ -877,7 +877,7 @@ SEPERATE:
 void session()
 {
   char *cp;
-  unsigned *t;
+  unsigned long *t;
 
   tokp = toks;
   etokp = toks + TOKSIZ - 5;
@@ -893,7 +893,7 @@ void session()
   } while (*cp != '\n');
 
   treep = trebuf;
-  treeend = (unsigned *)trebuf + TRESIZ;
+  treeend = (unsigned long *)trebuf + TRESIZ;
 
   if (!overflow) {
     if (error == 0) {
